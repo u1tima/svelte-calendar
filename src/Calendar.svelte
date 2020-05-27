@@ -1,14 +1,13 @@
 <script>
-  import { daysMon, daysSan, months } from "./data.js";
+  import { days, months } from "./data.js";
 
   export let startOnMonday = false;
   export let selectedDate = 1;
-  export let events;
-  console.log(events);
+  export let events = null;
 
   const numOfCell = 42;
   const shiftDays = startOnMonday ? 1 : 0;
-  const days = startOnMonday ? daysMon : daysSan;
+  const daysOfWeek = startOnMonday ? shiftDaysOfWeek(days) : days;
 
   let now = new Date();
 
@@ -16,39 +15,54 @@
   $: year = now.getFullYear();
   $: dates = getDates(month, year);
 
+  function shiftDaysOfWeek(days) {
+    const day = days.shift();
+    days.push(day);
+    return days;
+  }
+
   function getDates(month, year) {
     let result = [];
 
-    const startDayOfMonth = new Date(year, month, 1).getDay() - shiftDays;
-    let daysInLastMonth = new Date(year, month, 0).getDate();
+    const startDay = new Date(year, month, 1).getDay() - shiftDays;
+    const daysInLastMonth = new Date(year, month, 0).getDate();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     // last month
-    for (let i = 0; i < startDayOfMonth; i++) {
+    for (let i = daysInLastMonth - startDay + 1; i <= daysInLastMonth; i++) {
+      const cls = ["date"];
+      cls.push("is-hidden");
+
       result.push({
-        date: daysInLastMonth,
-        hidden: true
+        date: i,
+        classes: cls
       });
-      daysInLastMonth--;
     }
-    result = result.reverse();
 
     // this month
     for (let i = 1; i <= daysInMonth; i++) {
       const day = new Date(year, month, i).getDay();
+
+      const cls = ["date"];
+      if (day == 0 || day == 6) {
+        cls.push("is-weekend");
+      }
+
       result.push({
         date: i,
-        hidden: false,
-        selected: i == selectedDate,
-        isWeekEnd: day == 0 || day == 6
+        classes: cls,
+        selected: i == selectedDate
       });
     }
 
     // next months
     for (let i = 1; numOfCell - result.length; i++) {
+      const cls = ["date"];
+      cls.push("is-hidden");
+
       result.push({
         date: i,
-        hidden: true
+        classes: cls
       });
     }
     return result;
@@ -91,9 +105,11 @@
 
 <style>
   .calendar {
-    width: 350px;
+    box-sizing: border-box;
+    width: 300px;
     margin: 0 auto;
-    padding: 20px;
+    margin-bottom: 20px;
+    padding: 10px;
     border: 1px solid #ccc;
   }
 
@@ -115,7 +131,7 @@
 
   .days {
     display: grid;
-    grid-template-columns: repeat(7, 50px);
+    grid-template-columns: repeat(7, 1fr);
     grid-template-rows: 30px;
   }
 
@@ -141,7 +157,7 @@
   }
 
   .is-weekend {
-    color: #1ca1c1;
+    color: red;
   }
 
   .highlight {
@@ -173,21 +189,19 @@
   </div>
 
   <div class="days">
-    {#each days as day}
+    {#each daysOfWeek as day}
       <div class="day">{day}</div>
     {/each}
   </div>
 
   <div class="dates" on:click={e => changeDate(e)}>
     {#each dates as date, index}
-      <div
-        class="date {date.hidden ? 'is-hidden' : ''}
-        {date.isWeekEnd ? 'is-weekend' : ''}">
+      <div class={date.classes.join(' ')}>
 
         <span id={index} class="highlight {date.selected ? 'is-selected' : ''}">
           {date.date}
         </span>
-        
+
       </div>
     {/each}
   </div>

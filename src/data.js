@@ -1,5 +1,5 @@
-export const daysSan = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-export const daysMon = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
 export const months = [
   "January",
   "February",
