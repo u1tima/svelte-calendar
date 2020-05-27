@@ -6,6 +6,7 @@
 </script>
 
 <div class="container">
+  <Calendar />
   <Calendar selectedDate={14} />
   <Calendar startOnMonday={true} events={cb} />
 </div>

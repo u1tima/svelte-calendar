@@ -2,7 +2,7 @@
   import { days, months } from "./data.js";
 
   export let startOnMonday = false;
-  export let selectedDate = 1;
+  export let selectedDate = new Date().getDate();
   export let events = null;
 
   const numOfCell = 42;
@@ -81,6 +81,8 @@
       default:
         break;
     }
+
+    selectedDate = null;
 
     if (month > 11) {
       month = 0;
