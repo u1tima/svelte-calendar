@@ -1,12 +1,14 @@
 <script>
   import Calendar from "./Calendar.svelte";
+  
   const cb = date => {
-    if (date.getDay() == 7) return "birthday";
+    if (date.getDate() == 7) return "birthday";
   };
 </script>
 
 <div class="container">
+  <Calendar selectedDate={new Date(2020,3,22)} />
+
   <Calendar />
-  <Calendar selectedDate={14} />
   <Calendar startOnMonday={true} events={cb} />
 </div>

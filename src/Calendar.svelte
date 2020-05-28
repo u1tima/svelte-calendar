@@ -2,8 +2,10 @@
   import { days, months } from "./data.js";
 
   export let startOnMonday = false;
-  export let selectedDate = new Date().getDate();
-  export let events = null;
+  export let selectedDate = new Date();
+  export let events = () => {};
+
+  selectedDate = selectedDate.toDateString();
 
   const numOfCell = 42;
   const shiftDays = startOnMonday ? 1 : 0;
@@ -16,56 +18,47 @@
   $: dates = getDates(month, year);
 
   function shiftDaysOfWeek(days) {
-    const day = days.shift();
-    days.push(day);
-    return days;
+    const arr = [...days];
+    const day = arr.shift();
+    arr.push(day);
+    return arr;
   }
 
   function getDates(month, year) {
-    let result = [];
+    const days = [];
 
-    const startDay = new Date(year, month, 1).getDay() - shiftDays;
+    const sDay = new Date(year, month, 1).getDay() - shiftDays;
     const daysInLastMonth = new Date(year, month, 0).getDate();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // last month
-    for (let i = daysInLastMonth - startDay + 1; i <= daysInLastMonth; i++) {
-      const cls = ["date"];
-      cls.push("is-hidden");
+    let startDay = daysInLastMonth - sDay + 1;
 
-      result.push({
-        date: i,
-        classes: cls
-      });
-    }
-
-    // this month
-    for (let i = 1; i <= daysInMonth; i++) {
-      const day = new Date(year, month, i).getDay();
+    for (let i = 0; i < numOfCell; i++) {
+      const fullDate = new Date(year, month - 1, startDay);
+      const date = fullDate.getDate();
+      const m = fullDate.getMonth();
+      const d = fullDate.getDay();
+      const dateToString = fullDate.toDateString();
 
       const cls = ["date"];
-      if (day == 0 || day == 6) {
-        cls.push("is-weekend");
-      }
 
-      result.push({
-        date: i,
+      m !== month ? cls.push("is-hidden") : null;
+      d == 0 || d == 6 ? cls.push("is-weekend") : null;
+
+      const eventCls = events(fullDate);
+      if (eventCls) cls.push(eventCls);
+
+      days.push({
+        fullDate,
+        dateToString,
+        date,
         classes: cls,
-        selected: i == selectedDate
+        selected: dateToString == selectedDate
       });
+
+      startDay++;
     }
 
-    // next months
-    for (let i = 1; numOfCell - result.length; i++) {
-      const cls = ["date"];
-      cls.push("is-hidden");
-
-      result.push({
-        date: i,
-        classes: cls
-      });
-    }
-    return result;
+    return days;
   }
 
   function changeMonth(action) {
@@ -82,8 +75,6 @@
         break;
     }
 
-    selectedDate = null;
-
     if (month > 11) {
       month = 0;
       year++;
@@ -96,12 +87,13 @@
   }
 
   function changeDate(e) {
-    const { id } = e.target;
-    if (id == "") return;
-    dates = dates.map((item, index) => {
-      item.selected = id == index;
-      return item;
+    const ind = e.target.getAttribute("data-index");
+    if (!ind) return;
+    dates = dates.map((date, index) => {
+      date.selected = index == ind;
+      return date;
     });
+    selectedDate = dates[ind].dateToString;
   }
 </script>
 
@@ -200,7 +192,9 @@
     {#each dates as date, index}
       <div class={date.classes.join(' ')}>
 
-        <span id={index} class="highlight {date.selected ? 'is-selected' : ''}">
+        <span
+          data-index={index}
+          class="highlight {date.selected ? 'is-selected' : ''}">
           {date.date}
         </span>
 
